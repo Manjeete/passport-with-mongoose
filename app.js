@@ -12,6 +12,12 @@ const sendotp = require('./utils/sentOtp');
 const Otp = require("./models/otp");
 const User = require("./models/user");
 
+//router
+const authRouter = require("./routes/auth");
+
+//passport
+require("./passport");
+
 mongoose
     .connect(process.env.DATABASE, {
         useNewUrlParser: true,
@@ -37,34 +43,8 @@ app.get("/",(req,res) =>{
     })
 })
 
-//send otp for registration
-app.post("/register",async(req,res) =>{
-    try{
-        const phone = req.body.phone;
-        let userCheck = await User.findOne({phone:phone})
-        if(userCheck){
-            return res.status(400).json({
-                status:false,
-                msg:"User with this phone already exists."
-            })
-        }
-        let otp = await sendotp(phone);
-        if(!otp.status){
-            return res.status(400).json({
-                status:false,
-                msg:otp.msg
-            })
-        }
-        let checkOtpObj = await Otp.findOneAndDelete({phone:phone});
-        let createOtpRecord = new Otp({phone:phone,otp:otp.otp});
-        let saveOtp = await createOtpRecord.save();
+app.use("/user",authRouter);
 
-        res.json(otp)
-        
-    }catch(err){
-        console.log(err)
-    }
-})
 
 app.listen(PORT,() =>{
     console.log(`Server is running at port ${PORT}`)

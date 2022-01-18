@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
     },
     phone:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     },
     isVerified:{
         type:Boolean,
