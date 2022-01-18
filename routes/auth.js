@@ -61,4 +61,13 @@ router.post("/login",function(req,res,next){
 
 });
 
+
+//protected routes
+router.get("/protected-check",passport.authenticate('jwt', {session: false}),async(req,res) =>{
+    res.status(200).json({
+        status:true,
+        msg:"ok"
+    })
+})
+
 module.exports = router;
