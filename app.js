@@ -6,6 +6,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config()
 
+const sendotp = require('./utils/sentOtp');
+
 mongoose
     .connect(process.env.DATABASE, {
         useNewUrlParser: true,
@@ -24,6 +26,7 @@ app.use(morgan('dev'));
 app.use(cors());
 
 app.get("/",(req,res) =>{
+    sendotp("+919648666718")
     res.status(200).json({
         status:true,
         msg:"Working..."
