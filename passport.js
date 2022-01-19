@@ -63,11 +63,21 @@ function (jwtPayload, cb) {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://www.example.com/auth/google/callback"
+    callbackURL: "http://localhost:8080/user/google/callback"
   },
-  function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
+  function(accessToken, refreshToken, profile, done) {
+    // User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    //   return cb(err, user);
+    // });
+    return done(null,profile)
   }
 ));
+
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+  
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });

@@ -10,6 +10,7 @@ const sendotp = require("../utils/sentOtp");
 //models
 const Otp = require('../models/otp');
 const User = require('../models/user');
+const { append } = require('express/lib/response');
 
 //send otp for registration
 router.post("/otp",async(req,res) =>{
@@ -60,6 +61,28 @@ router.post("/login",function(req,res,next){
     })(req,res);
 
 });
+
+//google auth
+router.get("/auth/google",
+    passport.authenticate('google',{scope:['email','profile']})
+)
+
+router.get('/google/callback',
+    passport.authenticate('google',{session:false}),(req,res)=>{
+        console.log(req.user)
+        // console.log(req.profile)
+        res.send(req.user)
+    }
+)
+
+router.get("/auth/failure",(req,res) =>{
+    res.send('Something went wrong...')
+})
+
+
+router.get('/protected',(req,res) =>{
+    res.send(req.user)
+})
 
 
 //protected routes

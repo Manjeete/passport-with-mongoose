@@ -8,12 +8,19 @@ const userSchema = new mongoose.Schema({
     },
     phone:{
         type:String,
-        required:true,
         unique:true
     },
     isVerified:{
         type:Boolean,
         default:false
+    },
+    googleId:{
+        type:String,
+        unique:true
+    },
+    facebookId:{
+        type:String,
+        unique:true
     }
 
 },
