@@ -3,6 +3,7 @@ require("dotenv").config()
 //models
 const Otp = require('./models/otp');
 const User = require('./models/user');
+const Profile = require('./models/profile');
 
 //google oauth2
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -49,8 +50,10 @@ function (jwtPayload, cb) {
 
     //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.
     return User.findById(jwtPayload._id)
-        .then(user => {
-            return cb(null, user);
+        .then(async user => {
+            let profile = await Profile.findOne({user:user._id})
+            // console.log(profile)
+            return cb(null, {user,profile});
         })
         .catch(err => {
             return cb(err);
@@ -65,11 +68,14 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "http://localhost:8080/user/google/callback"
   },
-  function(accessToken, refreshToken, profile, done) {
-    // User.findOrCreate({ googleId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
-    return done(null,profile)
+  async function(accessToken, refreshToken, profile, cb) {
+      let user = await User.findOne({googleId:profile.id});
+      if(!user){
+          user = await User.create({googleId:profile.id,isVerified:true})
+          await Profile.create({user:user._id,firstname:profile._json.given_name,lastname:profile._json.family_name,email:profile._json.email,image:profile._json.picture})
+          return cb(null,user,{message:"Logged in successfully with google."})
+      }
+      return cb(null,user,{message:"Logged in successfully with google."})
   }
 ));
 
@@ -78,6 +84,6 @@ passport.serializeUser(function(user, done) {
     done(null, user);
   });
   
-  passport.deserializeUser(function(user, done) {
-    done(null, user);
-  });
+passport.deserializeUser(function(user, done) {
+done(null, user);
+});

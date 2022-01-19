@@ -7,20 +7,17 @@ const userSchema = new mongoose.Schema({
         default:"user"
     },
     phone:{
-        type:String,
-        unique:true
+        type:String
     },
     isVerified:{
         type:Boolean,
         default:false
     },
     googleId:{
-        type:String,
-        unique:true
+        type:String
     },
     facebookId:{
-        type:String,
-        unique:true
+        type:String
     }
 
 },
