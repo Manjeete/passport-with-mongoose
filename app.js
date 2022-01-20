@@ -16,6 +16,7 @@ const authRouter = require("./routes/auth");
 //passport
 require("./passport");
 
+//MongoDB database connection
 mongoose
     .connect(process.env.DATABASE, {
         useNewUrlParser: true,
@@ -29,6 +30,7 @@ const app = express();
 
 const PORT = 8080
 
+//middlewares
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors());
