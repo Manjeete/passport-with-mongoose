@@ -25,7 +25,7 @@ passport.use(new LocalStrategy({
         //check whether otp match or not
         let otpCheck = await Otp.findOne({phone,otp});
         if(!otpCheck){
-            return cb(null,false,{message:"Invalid Otp"});
+            return cb(null,false,{message:"Invalid Otp."});
         }
         //this one is typically a DB call. Assume that the returned user object is pre-formatted and ready for storing in JWT
         return await User.findOne({phone})
