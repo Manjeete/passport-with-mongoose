@@ -22,7 +22,6 @@
 
 ## Running Locally
 
-Make sure you have [Node.js](http://nodejs.org/) and the [Heroku Toolbelt](https://toolbelt.heroku.com/) installed.
 
 ```sh
 git clone https://github.com/Manjeete/passport-with-mongoose.git
