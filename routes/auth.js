@@ -16,13 +16,6 @@ const Profile = require("../models/profile");
 router.post("/otp",async(req,res) =>{
     try{
         const phone = req.body.phone;
-        // let userCheck = await User.findOne({phone:phone})
-        // if(userCheck){
-        //     return res.status(400).json({
-        //         status:false,
-        //         msg:"User with this phone already exists."
-        //     })
-        // }
         let otp = await sendotp(phone);
         if(!otp.status){
             return res.status(400).json({
@@ -55,7 +48,7 @@ router.post("/login",function(req,res,next){
             if(err){
                 res.send(err)
             }
-            const token = jwt.sign(user.toJSON(), 'njhgfdhjkgvbh67');
+            const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET_KEY);
             const profile = await Profile.findOne({user:user._id})
             return res.status(200).json({
                 status:true,
@@ -75,7 +68,7 @@ router.get("/auth/google",
 
 router.get('/google/callback',
     passport.authenticate('google',{session:false}),async(req,res)=>{
-        const token = jwt.sign(req.user.toJSON(), 'njhgfdhjkgvbh67');
+        const token = jwt.sign(req.user.toJSON(), process.env.JWT_SECRET_KEY);
         let profile = await Profile.findOne({user:req.user._id})
         res.status(200).json({
             status:false,
@@ -87,13 +80,51 @@ router.get('/google/callback',
 )
 
 
+//facebook auth
+router.get("/auth/facebook",passport.authenticate('facebook',{ scope:['email'] }))
+
+router.get("/facebook/callback",
+    passport.authenticate('facebook',{session:false}),async(req,res) =>{
+        const token = jwt.sign(req.user.toJSON(), process.env.JWT_SECRET_KEY);
+        let profile = await Profile.findOne({user:req.user._id})
+        res.status(200).json({
+            status:false,
+            user:req.user,
+            profile,
+            token
+        })
+    }
+)
+
+//check whether user logged in or not
+const isAuthenticated =(req,res,next) =>{
+    if(!req.headers.authorization || !req.headers.authorization.split(' ')[0] === 'Bearer'){
+        return res.status(401).json({
+            status:false,
+            msg:"Authorization token is required."
+        })
+    }
+    return passport.authenticate('jwt',{session:false},(err,user,info)=>{
+        if(err){
+            return res.status(500).send({msg: 'Internal Server Error'})
+        }
+        if(user){
+            req.user = user;
+            next();
+        }else{
+            return res.status(401).send({msg: 'Unauthorized'})
+        }
+    })(req,res);
+} 
+
+
+
 //protected routes
-router.get("/protected-check",passport.authenticate('jwt',{session: false}),async(req,res) =>{
-    console.log(req.user.user)
-    console.log(req.user.profile)
+router.get("/protected-check",isAuthenticated,async(req,res) =>{
     res.status(200).json({
         status:true,
-        msg:"ok"
+        user:req.user,
+        msg:"Only logged In User can see this message."
     })
 })
 

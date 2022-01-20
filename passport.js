@@ -7,6 +7,7 @@ const Profile = require('./models/profile');
 
 //google oauth2
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 
 const passport = require('passport')
@@ -44,7 +45,7 @@ passport.use(new LocalStrategy({
 //authentication check
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey   : 'njhgfdhjkgvbh67'
+    secretOrKey   : process.env.JWT_SECRET_KEY
 },
 function (jwtPayload, cb) {
 
@@ -56,6 +57,7 @@ function (jwtPayload, cb) {
             return cb(null, {user,profile});
         })
         .catch(err => {
+            console.log(err)
             return cb(err);
         });
 }
@@ -76,6 +78,25 @@ passport.use(new GoogleStrategy({
           return cb(null,user,{message:"Logged in successfully with google."})
       }
       return cb(null,user,{message:"Logged in successfully with google."})
+  }
+));
+
+//facebook authentication
+passport.use(new FacebookStrategy({
+    clientID: process.env.FACEBOOK_APP_ID,
+    clientSecret: process.env.FACEBOOK_APP_SECRET,
+    callbackURL: "https://5540-2405-201-5c11-8056-b5-ba34-dfab-45e1.ngrok.io/user/facebook/callback",
+    profileFields: ['id', 'displayName','picture.type(large)', 'email']
+  },
+  async function(accessToken, refreshToken, profile, cb) {
+    let user = await User.findOne({facebookId:profile.id});
+    if(!user){
+        user = await User.create({facebookId:profile.id,isVerified:true})
+        await Profile.create({user:user._id,firstname:profile._json.name,email:profile._json.email,image:profile.photos[0].value})
+        return cb(null,user,{message:"Logged in successfully with facebook."})
+    }
+    
+    return cb(null,user,{message:"Logged in successfully with facebook."})
   }
 ));
 

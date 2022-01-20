@@ -6,8 +6,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config()
 
-const sendotp = require('./utils/sentOtp');
-
 //models
 const Otp = require("./models/otp");
 const User = require("./models/user");
@@ -35,14 +33,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors());
 
-app.get("/",(req,res) =>{
-    // sendotp("+919648666718")
-    res.status(200).json({
-        status:true,
-        msg:"Working..."
-    })
-})
-
+//auth routes
 app.use("/user",authRouter);
 
 
