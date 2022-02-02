@@ -17,6 +17,7 @@ const authRouter = require("./routes/auth");
 require("./passport");
 
 //MongoDB database connection
+//deploying with aws mongodb
 mongoose
     .connect(process.env.DATABASE, {
         useNewUrlParser: true,
