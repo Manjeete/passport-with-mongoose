@@ -128,4 +128,81 @@ router.get("/protected-check",isAuthenticated,async(req,res) =>{
     })
 })
 
+
+// Normal testing
+const Cool = require("../models/cool");
+
+router.post("/cool",async(req,res) =>{
+    try{
+        const {userId,owes} = req.body;
+        let cool = await Cool.create({userId:userId,owes:owes})
+        res.status(201).json({
+            status:true,
+            cool
+        })
+    }catch(err){
+        return res.status(500).json({
+            status:false
+        })
+    }
+})
+
+
+//array update under mongoose schema test
+router.patch("/cool/update",async(req,res) =>{
+    try{
+        const {paidBy,amount,paidForUsers,type} = req.body;
+        let user = await Cool.findOne({userId:paidBy})
+        let index = paidForUsers.indexOf(paidBy)
+        paidForUsers.splice(index,1)
+        let splitAmount = amount/(paidForUsers.length);
+        // console.log(removeCurrentUser)
+        if(type==='EQUAL'){
+            for(let i=0;i<paidForUsers.length;i++){
+                let userExist = await Cool.findOne({userId:paidBy,"owes.userId":paidForUsers[i]})
+                if(!userExist){
+                    user.owes.push({userId:paidForUsers[i],amount:splitAmount});
+                    // let l = await Cool.findByIdAndUpdate({userId:paidBy},{$push:{owes:{userId:paidForUsers[i],amount:splitAmount}}},{new:true});
+                    // console.log(l)
+                }else if(userExist){
+                    let existUserAmount = await userExist.owes.filter(
+                        (cuamount) =>cuamount.userId===paidForUsers[i]
+                    )
+                    let update = await Cool.findOneAndUpdate({"owes.userId":paidForUsers[i]},{$set:{'owes.$.amount':existUserAmount[0].amount+splitAmount}},{new:true})
+                }
+                
+            }
+            user.save()
+        }else if(type==='EXACT'){
+            for(let i=0;i<paidForUsers.length;i++){
+                let userExist = await Cool.findOne({userId:paidBy,"owes.userId":paidForUsers[i]})
+                console.log(amount[i])
+                if(!userExist){
+                    user.owes.push({userId:paidForUsers[i],amount:amount[i+1]});
+                    // let l = await Cool.findByIdAndUpdate({userId:paidBy},{$push:{owes:{userId:paidForUsers[i],amount:splitAmount}}},{new:true});
+                    // console.log(l)
+                }else if(userExist){
+                    let existUserAmount = await userExist.owes.filter(
+                        (cuamount) =>cuamount.userId===paidForUsers[i]
+                    )
+                    let update = await Cool.findOneAndUpdate({"owes.userId":paidForUsers[i]},{$set:{'owes.$.amount':existUserAmount[0].amount+amount[i+1]}},{new:true})
+                }
+            }
+            user.save()
+
+        }
+        res.status(201).json({
+            status:true
+            
+        })
+    }catch(err){
+        console.log(err)
+
+        return res.status(500).json({
+            status:false,
+            msg:err.message
+        })
+    }
+})
+
 module.exports = router;
